@@ -1,0 +1,6 @@
+[0m[[0m[0mdebug[0m] [0m[0mCopy resource mappings: [0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/src/main/resources/online_retail.csv,/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/scala-2.11/classes/online_retail.csv)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/src/main/resources/production.csv,/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/scala-2.11/classes/production.csv)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/src/main/resources/production_test.csv,/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/scala-2.11/classes/production_test.csv)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/src/main/resources/training_test.csv,/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/scala-2.11/classes/training_test.csv)[0m
+[0m[[0m[0mdebug[0m] [0m[0m	(/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/src/main/resources/training.csv,/home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/scala-2.11/classes/training.csv)[0m
