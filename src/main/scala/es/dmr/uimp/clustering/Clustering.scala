@@ -9,7 +9,8 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.sql.functions._
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
   * Created by root on 3/12/17.
@@ -79,35 +80,28 @@ object Clustering {
 
   def elbowSelection(costs: Seq[Double], ratio : Double): Int = {
     // TODO: Select the best model
-    costs.sliding(2).map{
+
+    costs.toList.sliding(2).map{
       case x :: y :: _ => y.toDouble/x.toDouble
       case _ => 0.0
 
-    }.indexWhere(x => x > ratio)+1
+    }.indexWhere(x => x > ratio) + 2
 
   }
-
-  def elbowSelection2(costs: Seq[Double], ratio : Double): Int = {
-    // TODO: Select the best model
-    var k = 0
-
-    for (index <- 1 until costs.length) {
-      val ratio_ = costs(index) / costs(index - 1)
-
-      if (ratio_ > ratio && k == 0) {
-        k = index + 1
-      }
-    }
-    k
-  }
-
 
   def saveThreshold(threshold : Double, fileName : String) = {
     val file = new File(fileName)
     val bw = new BufferedWriter(new FileWriter(file))
     // decide threshold for anomalies
-    bw.write(threshold.toString) // last item is the threshold
+    bw.write(threshold.toString ) // last item is the threshold
     bw.close()
+  }
+
+  def saveCosts(costs: Seq[Double], fileName : String) = {
+    val file = new File(fileName)
+    val buffer = new BufferedWriter(new FileWriter(file))
+    buffer.write(costs.toString)
+    buffer.close
   }
 
 
