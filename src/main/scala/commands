@@ -1,0 +1,23 @@
+
+# Arrancar Zookeeper
+sudo bin/zookeeper-server-start.sh config/zookeeper.properties
+
+# Arrancar Kafka
+sudo bin/kafka-server-start.sh config/server.properties
+
+# Crear un topic
+sudo sh ./bin/kafka-topics.sh --create --zookeeper localhost:2181 --topic facturas_canceladas --replication-factor 1 --partitions 3
+
+# Listar los topics activos
+bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+# Eliminar un topic
+sh ./bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic anomalias_bisect_kmeans
+
+# Crear consumer para un topic
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic my_topic --from-beginning
+
+
+
+
+
