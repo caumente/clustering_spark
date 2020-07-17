@@ -24,14 +24,6 @@ object InvoicePipeline {
   case class Purchase(invoiceNo : String, quantity : Int, invoiceDate : String,
                       unitPrice : Double, customerID : String, country : String)
 
-  def filterPurchase(purchase: Purchase): Boolean = {
-    purchase.invoiceNo == null || purchase.invoiceNo.startsWith("C") ||
-    purchase.invoiceDate == null || purchase.customerID == null ||
-    purchase.quantity.isNaN || purchase.unitPrice.isNaN ||
-    purchase.unitPrice < 0 || purchase.country == null
-  }
-
-
   case class Invoice(invoiceNo : String, avgUnitPrice : Double,
                      minUnitPrice : Double, maxUnitPrice : Double, time : Double,
                      numberItems : Double, lastUpdated : Long, lines : Int, customerId : String)
@@ -43,12 +35,13 @@ object InvoicePipeline {
     val Array(modelFile, thresholdFile, modelFileBisect, thresholdFileBisect, zkQuorum, group, topics, numThreads, brokers) = args
     val sparkConf = new SparkConf().setAppName("InvoicePipeline")
     val sc = new SparkContext(sparkConf)
-    val ssc = new StreamingContext(sc, Seconds(1))
+    val ssc = new StreamingContext(sc, Seconds(1)) //Seconds(20)
 
     // Checkpointing
     ssc.checkpoint("./checkpoint")
 
     // TODO: Load model and broadcast
+
     // Loading models and thresholds
     val KMeansData = loadKMeansAndThreshold(sc, modelFile, thresholdFile)
     val KModel = ssc.sparkContext.broadcast(KMeansData._1)
@@ -58,6 +51,7 @@ object InvoicePipeline {
     val BModel: Broadcast[BisectingKMeansModel] = ssc.sparkContext.broadcast(KMeansBisectData._1)
     val BThreshold: Broadcast[Double] = ssc.sparkContext.broadcast(KMeansBisectData._2)
 
+    // broadcasting variables
     val broadcastBrokers: Broadcast[String] = ssc.sparkContext.broadcast(brokers)
 
 
@@ -67,21 +61,22 @@ object InvoicePipeline {
     val purchasesFeed : DStream[(String, String)] = connectToPurchases(ssc, zkQuorum, group, topics, numThreads)
     val purchasesStream = getPurchasesStream(purchasesFeed)
 
-    detectWrongPurchases(purchasesStream, broadcastBrokers)
+    // Analyzing if a purchase is wrong or cancel
     detectCancellations(purchasesStream, broadcastBrokers)
+    detectWrongPurchases(purchasesStream, broadcastBrokers)
 
 
     // TODO: rest of pipeline
 
     val invoices: DStream[(String, Invoice)] = purchasesStream
-      .filter(data => !filterPurchase(data._2))
-      .window(Seconds(40), Seconds(1))
+      .filter(data => !badPurchase(data._2))
+      .window(Seconds(40), Seconds(40))
       .updateStateByKey(updateFunction)
 
 
     val anomalizer = isAnomaly(KModel, BModel, KThres, BThreshold)(_,_)
-    detectAnomaly(sc)(invoices, "kmeans", broadcastBrokers)(anomalizer)
-    //detectAnomaly(sc)(invoices, "bisect", broadcastBrokers)(anomalizer)
+    detectAnomaly(invoices, "kmeans", broadcastBrokers)(anomalizer)
+    detectAnomaly(invoices, "bisection", broadcastBrokers)(anomalizer)
 
 
 
@@ -91,7 +86,7 @@ object InvoicePipeline {
 
   /**
    *
-   * Old functions
+   * Old functions: Kafka connections
    *
    */
   def publishToKafka(topic : String)(kafkaBrokers : Broadcast[String])(rdd : RDD[(String, String)]) = {
@@ -120,98 +115,6 @@ object InvoicePipeline {
     KafkaUtils.createStream(ssc, zkQuorum, group, topicMap)
   }
 
-
-  /**
-   *
-   * New functions
-   *
-   */
-
-
-  def getPurchasesStream(kafkaFeed: DStream[(String, String)]): DStream[(String, Purchase)] = {
-    val purchasesStream = kafkaFeed.transform { inputRDD =>
-      inputRDD.map { input =>
-        val invoiceId = input._1
-        val purchaseAsString = input._2
-
-        val purchase = parsePurchase(purchaseAsString)
-
-        (invoiceId, purchase)
-      }
-    }
-
-    purchasesStream
-  }
-  def parsePurchase(purchase: String): Purchase = {
-
-    val csvParserSettings = new CsvParserSettings()
-    val csvParser = new CsvParser(csvParserSettings)
-    val parsedPurchase = csvParser.parseRecord(purchase)
-
-    //parsedToPurchase(parsedPurchase)
-    Purchase(
-      parsedPurchase.getString(0),
-      parsedPurchase.getInt(3),
-      parsedPurchase.getString(4),
-      parsedPurchase.getDouble(5),
-      parsedPurchase.getString(6),
-      parsedPurchase.getString(7)
-    )
-
-  }
-  def updateFunction(newValues: Seq[Purchase], state: Option[Invoice]): Option[Invoice] = {
-    val invoiceNo = newValues.head.invoiceNo
-    val unitPrices = newValues.map(purchase => purchase.unitPrice)
-
-    val avgUnitPrice = unitPrices.sum / unitPrices.length
-    val minUnitPrice = unitPrices.min
-    val maxUnitPrice = unitPrices.max
-    val time = newValues.head.invoiceDate.split(" ")(1).split(":")(0).toDouble
-    val numberItems = newValues.map(purchase => purchase.quantity).sum
-    val lines = newValues.length
-    val lastUpdated = 0
-    val customer = newValues.head.customerID
-
-    Some(Invoice(invoiceNo, avgUnitPrice, minUnitPrice, maxUnitPrice, time, numberItems, lastUpdated, lines, customer))
-  }
-
-
-
-  val TOPIC_INVOICES_CANCELLED = "facturas_canceladas"
-  def detectCancellations(purchasesStream: DStream[(String, Purchase)], broadcastBrokers: Broadcast[String]): Unit = {
-    purchasesStream
-      .filter(data => data._2.invoiceNo.startsWith("C"))
-      .countByWindow(Minutes(8), Minutes(1))
-      .transform {invoicesTupleRDD =>
-        invoicesTupleRDD.map(count => (count.toString, "The number of invoices cancelled in last 8 minutes are: " + count.toString))
-      }
-      .foreachRDD { rdd =>
-        publishToKafka(TOPIC_INVOICES_CANCELLED)(broadcastBrokers)(rdd)
-      }
-  }
-
-  val BAD_PURCHASES_TOPIC = "facturas_erroneas"
-  def detectWrongPurchases(purchasesStream: DStream[(String, Purchase)], broadcastBrokers: Broadcast[String]): Unit = {
-    purchasesStream
-      .filter(data => isWrongPurchase(data._2))
-      .transform {rdd => rdd.map(purchase => (purchase._1 , "The invoice " + purchase._1 + " contains wrong purchases."))}
-      .foreachRDD { rdd => publishToKafka(BAD_PURCHASES_TOPIC)(broadcastBrokers)(rdd)
-      }
-  }
-  def isWrongPurchase(purchase: Purchase): Boolean = {
-    purchase.invoiceNo == null || purchase.invoiceDate == null || purchase.customerID == null ||
-      purchase.invoiceNo.isEmpty || purchase.invoiceDate.isEmpty || purchase.customerID.isEmpty ||
-      purchase.unitPrice.isNaN || purchase.quantity.isNaN || purchase.country.isEmpty ||
-      purchase.unitPrice.<(0)
-  }
-
-
-
-
-
-
-
-
   /**
    * Old functions: Load the model information: centroid and threshold
    */
@@ -233,29 +136,125 @@ object InvoicePipeline {
     (bisect, threshold)
   }
 
-  /**
-   *  New functions
-   */
-  val ANOMALY_KMEANS="anomaly_kmeans"
-  val ANOMALY_BISECT="anomaly_bisect"
 
-  def detectAnomaly(sc: SparkContext)
-                   (invoices: DStream[(String, Invoice)], model: String, broadcastBrokers: Broadcast[String])
+
+  /**
+   *
+   * New functions
+   *
+   */
+
+  // Dealing with pruchases
+  def getPurchasesStream(kafkaFeed: DStream[(String, String)]): DStream[(String, Purchase)] = {
+    val purchasesStream = kafkaFeed.transform { inputRDD =>
+      inputRDD.map { input =>
+        val invoiceId = input._1
+        val purchaseAsString = input._2
+
+        val purchase = parsePurchase(purchaseAsString)
+
+        (invoiceId, purchase)
+      }
+    }
+
+    purchasesStream
+  }
+
+  def parsePurchase(purchase: String): Purchase = {
+
+    val csvParserSettings = new CsvParserSettings()
+    val csvParser = new CsvParser(csvParserSettings)
+    val parsedPurchase = csvParser.parseRecord(purchase)
+
+    //parsedToPurchase(parsedPurchase)
+    Purchase(
+      parsedPurchase.getString(0),
+      parsedPurchase.getInt(3),
+      parsedPurchase.getString(4),
+      parsedPurchase.getDouble(5),
+      parsedPurchase.getString(6),
+      parsedPurchase.getString(7)
+    )
+
+  }
+
+  def updateFunction(newValues: Seq[Purchase], state: Option[Invoice]): Option[Invoice] = {
+    val invoiceNo = newValues.head.invoiceNo
+    val unitPrices = newValues.map(purchase => purchase.unitPrice)
+
+    val avgUnitPrice = unitPrices.sum / unitPrices.length
+    val minUnitPrice = unitPrices.min
+    val maxUnitPrice = unitPrices.max
+    val time = newValues.head.invoiceDate.split(" ")(1).split(":")(0).toDouble
+    val numberItems = newValues.map(purchase => purchase.quantity).sum
+    val lines = newValues.length
+    val lastUpdated = 0
+    val customer = newValues.head.customerID
+
+    Some(Invoice(invoiceNo, avgUnitPrice, minUnitPrice, maxUnitPrice, time, numberItems, lastUpdated, lines, customer))
+  }
+
+  // Cancelled purchases
+  val TOPIC_INVOICES_CANCELLED = "cancelledPurchases"
+  def detectCancellations(purchasesStream: DStream[(String, Purchase)], broadcastBrokers: Broadcast[String]): Unit = {
+    purchasesStream
+      .filter(data => data._2.invoiceNo.startsWith("C"))
+      .countByWindow(Minutes(8), Minutes(1))
+      .transform {invoicesTupleRDD =>
+        invoicesTupleRDD.map(count => (count.toString, "The number of invoices cancelled in last 8 minutes are: " + count.toString))
+      }
+      .foreachRDD { rdd =>
+        publishToKafka(TOPIC_INVOICES_CANCELLED)(broadcastBrokers)(rdd)
+      }
+  }
+
+  // Wrong purchases
+  val TOPIC_INVOICES_WRONG = "wrongPurchases"
+  def detectWrongPurchases(purchasesStream: DStream[(String, Purchase)], broadcastBrokers: Broadcast[String]): Unit = {
+    purchasesStream
+      .filter(data => isWrongPurchase(data._2))
+      .transform {rdd => rdd.map(purchase => (purchase._1 , "The invoice " + purchase._1 + " contains wrong purchases."))}
+      .foreachRDD { rdd => publishToKafka(TOPIC_INVOICES_WRONG)(broadcastBrokers)(rdd)
+      }
+  }
+
+  def isWrongPurchase(purchase: Purchase): Boolean = {
+
+    (purchase.invoiceNo == null || purchase.invoiceDate == null || purchase.customerID == null ||
+      purchase.invoiceNo.isEmpty || purchase.invoiceDate.isEmpty || purchase.customerID.isEmpty ||
+      purchase.unitPrice.isNaN || purchase.quantity.isNaN || purchase.country.isEmpty ||
+      purchase.unitPrice.<(0) ) && !purchase.invoiceNo.startsWith("C")
+  }
+
+  // Cancelled and wrong pruchases
+  def badPurchase(purchase: Purchase): Boolean = {
+    purchase.invoiceNo == null || purchase.invoiceNo.startsWith("C") ||
+      purchase.invoiceDate == null || purchase.customerID == null ||
+      purchase.quantity.isNaN || purchase.unitPrice.isNaN ||
+      purchase.unitPrice < 0 || purchase.country == null
+  }
+
+
+  // Anomaly detection
+  val ANOMALY_KMEANS="anomalyKmeans"
+  val ANOMALY_BISECT="anomalyBisection"
+
+  def detectAnomaly(invoices: DStream[(String, Invoice)], model: String, broadcastBrokers: Broadcast[String])
                    (anomalizer: (Invoice, String) => Boolean) = {
 
     def sendInvoices(topic: String) = {
       invoices.filter{data => anomalizer(data._2,model) == true}
-        .transform{rdd => rdd.map(data => (data._1.toString, "Anomaly detected by kmeans method into invoice number: " + data._1.toString))}
+        .transform{rdd => rdd.map(data => (data._1.toString, "Anomaly detected by " + model + " method into invoice number: " + data._1.toString))}
         .foreachRDD{rdd => publishToKafka(topic)(broadcastBrokers)(rdd)}
     }
 
     if (model == "kmeans")  {
       sendInvoices(ANOMALY_KMEANS)
     }
-    else if (model == "bisect"){
+    else if (model == "bisection"){
       sendInvoices(ANOMALY_BISECT)
     } else {
-      throw new Exception("need model")
+      throw new Exception("Need a model: kmeans or bisection")
     }
   }
 
@@ -275,7 +274,7 @@ object InvoicePipeline {
     if( modelType == "kmeans"){
       val distanceKMeans = KMeansClusterInvoices.distToCentroid(featuresVector, kMeansModel.value)
       distanceKMeans> kMeansThreshold.value
-    } else if (modelType == "bisect"){
+    } else if (modelType == "bisection"){
       val distanceBisect = KMeansClusterInvoices.distToCentroidBisect(featuresVector, kMeansBisectModel.value)
       distanceBisect>kMeansBisectThreshold.value
     } else{

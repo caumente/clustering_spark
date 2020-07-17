@@ -44,9 +44,6 @@ object KMeansClusterInvoices {
 
     // load data
     val df = loadData(sc, file)
-    //println(df.printSchema)
-    //val df_filtered = df.filter(df("hour") === "-1.0")
-    //println(df_filtered.show(10))
 
 
     // Filter not valid entries

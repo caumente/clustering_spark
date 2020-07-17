@@ -13,16 +13,11 @@ object InvoiceDataProducer extends App {
   val events = args(0)
   val topic = args(1)
   val brokers = args(2)
-  //val events = "./src/main/resources/production_test.csv"
-  //val test = new File(events)
-  //test.getAbsolutePath()
-  //val topic = "purchases"
-  //val brokers = "localhost:9092"
 
-  println("Los parametros con los que se inicializa el script son:")
-  println("Los datos que leeremos se encuentran en: " + events)
-  println("Se enviaran al topic de Kafka: " + topic)
-  println("Concretamente al broker: " + brokers)
+  //println("Los parametros con los que se inicializa el script son:")
+  //println("Los datos que leeremos se encuentran en: " + events)
+  //println("Se enviaran al topic de Kafka: " + topic)
+  //println("Concretamente al broker: " + brokers)
 
   val rnd = new Random()
   val props = new Properties()
@@ -44,7 +39,7 @@ object InvoiceDataProducer extends App {
       val invoiceNo = line.split(",")(0)
       val data = new ProducerRecord[String, String](topic, invoiceNo, line)
 
-      println("El producer genera los siguientes datos:" + data)
+      println(data)
       producer.send(data)
 
       // Introduce random delay

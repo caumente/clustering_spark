@@ -1,20 +1,20 @@
-[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: spark-tags_2.11-2.3.1.jar[0m
-[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: metrics-core-2.2.0.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: slf4j-simple-1.7.2.jar[0m
+[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: spark-tags_2.11-2.3.1.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: log4j-1.2.17.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: slf4j-api-1.7.25.jar[0m
+[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: metrics-core-2.2.0.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: univocity-parsers-2.5.9.jar[0m
-[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: scala-library-2.11.8.jar[0m
-[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: zkclient-0.3.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: spark-streaming-kafka-0-8_2.11-2.3.1.jar[0m
-[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: commons-csv-1.1.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: spark-csv_2.11-1.5.0.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: scala-parser-combinators_2.11-1.0.4.jar[0m
+[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: scala-library-2.11.8.jar[0m
+[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: zkclient-0.3.jar[0m
+[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: kafka_2.11-0.8.2.1.jar[0m
+[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: commons-csv-1.1.jar[0m
+[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: kafka-clients-0.8.2.1.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: snappy-java-1.1.2.6.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: unused-1.0.0.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: lz4-1.2.0.jar[0m
-[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: kafka_2.11-0.8.2.1.jar[0m
-[0m[[0m[0minfo[0m] [0m[0mIncluding from cache: kafka-clients-0.8.2.1.jar[0m
 [0m[[0m[0minfo[0m] [0m[0mIncluding from cache: scala-xml_2.11-1.0.4.jar[0m
 [0m[[0m[0mdebug[0m] [0m[0mCalculate mappings...[0m
 [0m[[0m[0minfo[0m] [0m[0mChecking every *.class/*.jar file's SHA-1.[0m
@@ -30,7 +30,7 @@
 [0m[[0m[33mwarn[0m] [0m[0mMerging 'org/apache/spark/unused/UnusedStubClass.class' with strategy 'first'[0m
 [0m[[0m[33mwarn[0m] [0m[0mStrategy 'discard' was applied to a file[0m
 [0m[[0m[33mwarn[0m] [0m[0mStrategy 'first' was applied to 8 files[0m
-[0m[[0m[0minfo[0m] [0m[0mSHA-1: b15529a38f849b56800b5fcfa0c04a4e9e5de68d[0m
+[0m[[0m[0minfo[0m] [0m[0mSHA-1: 537505ae3f74f8c2ff074f22c19bb7c7e1b5a636[0m
 [0m[[0m[0mdebug[0m] [0m[0mPackaging /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/scala-2.11/anomalyDetection-assembly-1.0.jar ...[0m
 [0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	LICENSE[0m
@@ -997,12 +997,12 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/es/dmr/uimp/realtime/InvoicePipeline$$anonfun$3.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	es/dmr/uimp/realtime/InvoicePipeline$$anonfun$4.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/es/dmr/uimp/realtime/InvoicePipeline$$anonfun$4.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	es/dmr/uimp/realtime/InvoicePipeline$$anonfun$5$$anonfun$apply$2.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/es/dmr/uimp/realtime/InvoicePipeline$$anonfun$5$$anonfun$apply$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	es/dmr/uimp/realtime/InvoicePipeline$$anonfun$5.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/es/dmr/uimp/realtime/InvoicePipeline$$anonfun$5.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	es/dmr/uimp/realtime/InvoicePipeline$$anonfun$6.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/es/dmr/uimp/realtime/InvoicePipeline$$anonfun$6.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	es/dmr/uimp/realtime/InvoicePipeline$$anonfun$7$$anonfun$apply$2.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/es/dmr/uimp/realtime/InvoicePipeline$$anonfun$7$$anonfun$apply$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	es/dmr/uimp/realtime/InvoicePipeline$$anonfun$7.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/es/dmr/uimp/realtime/InvoicePipeline$$anonfun$7.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	es/dmr/uimp/realtime/InvoicePipeline$$anonfun$8.class[0m
@@ -8335,6 +8335,8 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/production.csv[0m
 [0m[[0m[0mdebug[0m] [0m[0m	production_test.csv[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/production_test.csv[0m
+[0m[[0m[0mdebug[0m] [0m[0m	production_test2.csv[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/569254ac170e59b7598a955b89ce931082fee2e1_dir/production_test2.csv[0m
 [0m[[0m[0mdebug[0m] [0m[0m	rootdoc.txt[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/bigdata/Practica_Spark_streaming/codigo-sparkinvoice/target/streams/_global/assemblyOption/_global/streams/assembly/fa31dad473bed9955a488ee7ac98a97b6bf19c47_ddd5a8bced249bedd86fb4578a39b9fb71480573_da39a3ee5e6b4b0d3255bfef95601890afd80709/rootdoc.txt[0m
 [0m[[0m[0mdebug[0m] [0m[0m	scala-parser-combinators.properties[0m
